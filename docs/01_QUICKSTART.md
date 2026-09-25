@@ -45,7 +45,8 @@ GaussianPark3DGS/
 完整命令和 DGGT/Splatt3R 约束见 [07_FEEDFORWARD_VIDEO.md](07_FEEDFORWARD_VIDEO.md)。主命令为：
 
 ```powershell
-python -m parking_gs.cli reconstruct-video --video data/raw/site/parking.mp4 --backend dggt --repo D:/src/dggt --checkpoint D:/weights/model.pth --output outputs/video_site
+# 已克隆主仓库的 submodule 时，DGGT 默认使用 third_party/dggt
+python -m parking_gs.cli reconstruct-video --video data/raw/site/parking.mp4 --backend dggt --checkpoint D:/weights/model.pth --output outputs/video_site
 ```
 
 ## 5. 旧训练对照
@@ -63,7 +64,7 @@ python -m parking_gs.cli train --data data/processed/site --output outputs/site 
 | `No module named numpy` | 后续安装 requirements；当前工程未替你安装 |
 | `training requires CUDA` | 旧训练和 DGGT/Splatt3R 前馈通常需要 CUDA；CPU 仍可运行已有 scene 的 A* 与可视化 |
 | `Video reconstruction requires opencv-python` | 安装项目 requirements；当前不会替你安装 |
-| `DGGT requires --repo and --checkpoint` | 外部模型代码和权重需自行放置，见视频文档 |
+| `DGGT source not found` | 执行 `git submodule update --init --recursive`，或用 `--repo` 指定 DGGT checkout |
 | `Feed-forward output must contain...` | 检查 bridge/外部命令是否输出全局对齐 scene.npz、Gaussian PLY 或规范 NPZ |
 | 相机模型不支持 | 对图像执行 COLMAP image_undistorter，导出 PINHOLE 文本模型 |
 | 起点/终点 blocked or unknown | 检查整个车身，不只是坐标点；检查已核验区域、米制尺度、地面坐标 |

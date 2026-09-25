@@ -2,7 +2,7 @@
 
 当前主流程是：**视频 → 前馈式 3DGS（DGGT，可选 Splatt3R 适配）→ 高斯占据地图 → Hybrid A* → 闭环车辆仿真 → Web 可视化**。栅格 A* 保留为可选对照，原来的 per-scene 3DGS 优化训练链路也保留为研究对照。
 
-这是可修改、可复现实验的研究原型。它不是单网络联合训练的 image-to-control 策略，也不是可直接接入实车的自动泊车产品。前馈模型代码和权重由你按文档自行放置；项目不会静默下载它们。程序生成场景只用于离线回归测试，前端会明确标记。
+这是可修改、可复现实验的研究原型。它不是单网络联合训练的 image-to-control 策略，也不是可直接接入实车的自动泊车产品。DGGT 和 Splatt3R 源码通过 submodule 固定，模型权重仍由你按文档自行放置；项目不会静默下载权重。程序生成场景只用于离线回归测试，前端会明确标记。
 
 ## 交付内容
 
@@ -44,15 +44,15 @@ python -m parking_gs.server
 
 ## 视频到泊车的命令链
 
-先下载并配置 DGGT 代码和权重（链接见 [视频前馈重建文档](docs/07_FEEDFORWARD_VIDEO.md)），把视频路径和模型路径替换成你的实际路径：
+主仓库已经通过 submodule 固定 DGGT 和 Splatt3R 源码。首次克隆请使用 `git clone --recurse-submodules`；已有检出可执行 `git submodule update --init --recursive`。DGGT 权重仍需按 [视频前馈重建文档](docs/07_FEEDFORWARD_VIDEO.md) 单独准备：
 
 ```powershell
-python -m parking_gs.cli reconstruct-video --video data/raw/site/parking.mp4 --backend dggt --repo D:/src/dggt --checkpoint D:/weights/model_latest_waymo.pth --config configs/site.json --output outputs/video_site
+python -m parking_gs.cli reconstruct-video --video data/raw/site/parking.mp4 --backend dggt --checkpoint D:/weights/model_latest_waymo.pth --config configs/site.json --output outputs/video_site
 python -m parking_gs.cli evaluate --scene outputs/video_site/scene.npz --output outputs/video_site/evaluation.json
 python -m parking_gs.server
 ```
 
-刷新前端，选择 `video_site` 场景；也可以直接在网页上传视频并填写 DGGT 路径。DGGT 需要 CUDA 和其官方权重。视频只生成静态场景的第一段窗口，动态物体会由 DGGT 的 dynamic confidence 过滤；系统不自动识别停车位、不自动估计当前车辆实时位姿，也不自动从 RGB 证明某区域可通行。
+刷新前端，选择 `video_site` 场景；也可以直接在网页上传视频并填写 DGGT 路径（留空时使用 `third_party/dggt`）。DGGT 需要 CUDA 和其官方权重。视频只生成静态场景的第一段窗口，动态物体会由 DGGT 的 dynamic confidence 过滤；系统不自动识别停车位、不自动估计当前车辆实时位姿，也不自动从 RGB 证明某区域可通行。
 
 无需真实数据的复现：
 
@@ -73,4 +73,4 @@ python -m unittest discover -s tests -v
 6. [验证记录与局限](docs/06_VALIDATION.md)
 7. [开源依赖与参考资料](THIRD_PARTY_NOTICES.md)
 
-原创项目代码按 MIT 许可提供。DGGT 按 Apache-2.0 使用；Splatt3R 为 CC BY-NC 4.0，仅建议用于非商业研究；两者代码和权重均不随本项目分发。参考文献、依赖许可证和项目创新范围均单独列出。
+原创项目代码按 MIT 许可提供。DGGT 按 Apache-2.0 使用；Splatt3R 为 CC BY-NC 4.0，仅建议用于非商业研究；两者源码以 submodule 形式固定，权重不随本项目分发。参考文献、依赖许可证和项目创新范围均单独列出。

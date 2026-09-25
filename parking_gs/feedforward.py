@@ -18,6 +18,10 @@ import numpy as np
 from .scene import Scene
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_DGGT_REPO = PROJECT_ROOT / 'third_party' / 'dggt'
+
+
 @dataclass
 class VideoManifest:
     video: str
@@ -203,10 +207,13 @@ def reconstruct_video(video, output_dir, backend='dggt', repo=None, checkpoint=N
     if backend not in {'dggt', 'splatt3r', 'external'}:
         raise ValueError('backend must be dggt, splatt3r or external')
     if backend == 'dggt':
-        if not repo or not checkpoint:
-            raise ValueError('DGGT requires --repo and --checkpoint (model code and weights are external)')
+        repo_path = Path(repo).expanduser().resolve() if repo else DEFAULT_DGGT_REPO
+        if not repo_path.is_dir():
+            raise ValueError(f'DGGT source not found at {repo_path}; initialize submodules or pass --repo')
+        if not checkpoint:
+            raise ValueError('DGGT requires --checkpoint (weights remain external to this repository)')
         bridge = Path(__file__).resolve().parents[1] / 'scripts' / 'dggt_export_scene.py'
-        cmd = [sys.executable, str(bridge), '--dggt-repo', str(Path(repo).resolve()),
+        cmd = [sys.executable, str(bridge), '--dggt-repo', str(repo_path),
                '--checkpoint', str(Path(checkpoint).resolve()), '--frames', manifest.frames_dir,
                '--output', str(output_dir / 'scene.npz'), '--sequence-length', str(sequence_length)]
     elif command:

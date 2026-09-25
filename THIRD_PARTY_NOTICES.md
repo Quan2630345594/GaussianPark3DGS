@@ -12,8 +12,8 @@
 - **plyfile**，https://github.com/dranjan/plyfile ，MIT，用于读取前馈模型输出的 PLY 高斯文件。
 - **pytest**，https://github.com/pytest-dev/pytest ，MIT，可选开发测试工具；本项目测试也可用标准库 unittest 执行。
 - **COLMAP**，https://github.com/colmap/colmap ，BSD-3-Clause，外部数据预处理工具，未捆绑且未安装。
-- **DGGT**，https://github.com/xiaomi-research/dggt ，Apache-2.0，作为外部前馈视频重建后端；仅通过 `scripts/dggt_export_scene.py` 动态导入用户本地 checkout，不复制其代码或权重。
-- **Splatt3R**，https://github.com/btsmart/splatt3r ，CC BY-NC 4.0，作为可选图像对前馈后端；本项目不分发其运行时、模型或 checkpoint。商业使用前必须核对上游非商业限制。
+- **DGGT**，https://github.com/xiaomi-research/dggt ，Apache-2.0，作为 `third_party/dggt` Git submodule 提供前馈视频重建后端；本项目不分发其模型权重。
+- **Splatt3R**，https://github.com/btsmart/splatt3r ，CC BY-NC 4.0，作为 `third_party/splatt3r` Git submodule 提供可选图像对前馈后端；本项目不分发其模型 checkpoint。商业使用前必须核对上游非商业限制。
 
 分发第三方库二进制/源码时需保留各自完整许可证及适用声明；本文件不是这些许可证的替代文本。当前工程不包含第三方库安装包。
 

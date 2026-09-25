@@ -22,7 +22,7 @@ flowchart LR
 
 ### 前馈重建适配层
 
-`parking_gs/feedforward.py` 负责视频解码、外部命令隔离和输出归一化。默认 DGGT 路径调用 `scripts/dggt_export_scene.py`：该 bridge 动态加入用户提供的 DGGT checkout，加载 `VGGT` checkpoint，读取连续帧，取预测深度/位姿生成世界点，再用 DGGT 的 `gs_map`、动态置信度和静态掩码导出颜色、透明度、尺度、四元数与位置。它不会下载代码或权重。
+`parking_gs/feedforward.py` 负责视频解码、外部命令隔离和输出归一化。默认 DGGT 路径调用 `scripts/dggt_export_scene.py`：该 bridge 动态加入 `third_party/dggt`（也支持 `--repo` 指定其他 checkout），加载 `VGGT` checkpoint，读取连续帧，取预测深度/位姿生成世界点，再用 DGGT 的 `gs_map`、动态置信度和静态掩码导出颜色、透明度、尺度、四元数与位置。它不会下载权重。
 
 DGGT 原始仓库面向 Waymo/nuScenes/Argoverse2 的目录结构；本工程 bridge 对普通视频提供最小图像序列入口，默认只处理第一段 `sequence_length` 窗口，并在报告中保留这个限制。要覆盖长视频，需要在窗口之间做位姿对齐后再融合，当前不把互不一致的窗口直接拼接。
 

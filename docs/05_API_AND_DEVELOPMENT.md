@@ -46,7 +46,7 @@ simulation:
   metrics: position_error_m, yaw_error_rad, travel_m, gear_switches, duration_s
 ```
 
-`POST /api/reconstruct` 的 multipart 字段为 `video`、`backend`、`repo`、`checkpoint`、`command`（Splatt3R/external 可选）、`config`（JSON 字符串）、`stride`、`max_frames`、`max_width`、`sequence_length`。DGGT 必须提供 repo 和 checkpoint；Splatt3R/external 的 command 必须使用 `{frames}` 与 `{output}` 占位符，并写出一个全局对齐的 scene.npz/PLY/NPZ。上传视频限制 1 GiB，扩展名限制 mp4/mov/avi/mkv/webm。
+`POST /api/reconstruct` 的 multipart 字段为 `video`、`backend`、`repo`、`checkpoint`、`command`（Splatt3R/external 可选）、`config`（JSON 字符串）、`stride`、`max_frames`、`max_width`、`sequence_length`。DGGT 默认使用 `third_party/dggt`，也可提供 repo 和 checkpoint；Splatt3R/external 的 command 必须使用 `{frames}` 与 `{output}` 占位符，并写出一个全局对齐的 scene.npz/PLY/NPZ。上传视频限制 1 GiB，扩展名限制 mp4/mov/avi/mkv/webm。
 
 重建任务完成后，`result.scene` 是可直接传给 `/api/scene?id=...` 与 `/api/jobs` 的场景 ID；输出目录包含抽帧、feedforward.log、reconstruction.json 和 scene.npz。
 

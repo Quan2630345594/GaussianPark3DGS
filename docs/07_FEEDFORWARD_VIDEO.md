@@ -10,28 +10,29 @@ Splatt3R 官方仓库实现的是“未标定图像对 → 3D Gaussians”，适
 - [Splatt3R 官方仓库](https://github.com/btsmart/splatt3r)：CC BY-NC 4.0，官方 demo 输入一张或两张图片并输出 PLY；其 README 明确使用 MASt3R 相关 checkpoint。
 - [Splatt3R 论文](https://arxiv.org/abs/2408.13912)。
 
-这些仓库、checkpoint 和它们的依赖不随本项目下载，也不会在服务端自动执行 git、pip 或 Hugging Face 下载。
+DGGT 和 Splatt3R 源码现在作为 `third_party/` 下的 Git submodule 固定在主项目中；checkpoint、数据集和它们的独立运行环境仍不随本项目分发。已有主项目检出可执行 `git submodule update --init --recursive`。服务端不会自动执行 pip 或 Hugging Face 下载。
 
 ## DGGT 安装与运行
 
-后续由你在单独目录完成 DGGT 环境配置。项目根目录只保留 `requirements.txt`，避免把 DGGT 的点操作 CUDA 扩展、数据集工具和本项目依赖混在同一环境中。
+后续由你在 DGGT 的 submodule 或单独目录完成其环境配置。项目根目录只保留 `requirements.txt`，避免把 DGGT 的点操作 CUDA 扩展、数据集工具和本项目依赖混在同一环境中。
 
 ```powershell
-git clone https://github.com/xiaomi-research/dggt D:/src/dggt
+# 如果主项目已用 --recurse-submodules 克隆，可直接使用 third_party/dggt
+# 否则在主项目根目录执行：
+git submodule update --init --recursive
 # 按 DGGT README 创建它自己的环境并安装 requirements
 # 按官方链接下载 Waymo checkpoint，例如 D:/weights/model_latest_waymo.pth
 
 python -m parking_gs.cli reconstruct-video `
   --video data/raw/site/parking.mp4 `
   --backend dggt `
-  --repo D:/src/dggt `
   --checkpoint D:/weights/model_latest_waymo.pth `
   --config configs/site.json `
   --output outputs/parking_video `
   --stride 3 --max-frames 96 --sequence-length 8
 ```
 
-`scripts/dggt_export_scene.py` 会动态加入 `--repo`，加载 `dggt.models.vggt.VGGT`，读取前馈 checkpoint，调用深度和位姿转换，把静态高斯写成 `outputs/parking_video/scene.npz`。没有模型代码、权重、CUDA 或 `opencv-python` 时会立即给出错误，不会退回随机地图。
+`scripts/dggt_export_scene.py` 会动态加入 `third_party/dggt`（也可通过 `--repo` 指定其他 checkout），加载 `dggt.models.vggt.VGGT`，读取前馈 checkpoint，调用深度和位姿转换，把静态高斯写成 `outputs/parking_video/scene.npz`。没有 submodule、权重、CUDA 或 `opencv-python` 时会立即给出错误，不会退回随机地图。
 
 视频会先被抽帧为 JPG，默认每 3 帧取一帧、最多 96 帧、宽度最多 960。DGGT bridge 默认只处理第一段最多 8 帧，因为不同窗口的预测坐标系不能直接拼接。输出 `reconstruction.json` 会记录窗口限制、帧数和高斯数。如果要处理长视频，应在 DGGT 层做窗口间位姿/尺度对齐，再把对齐后的全局 `scene.npz` 交给本项目；当前版本拒绝把未对齐窗口静默合并。
 
@@ -64,7 +65,7 @@ Splatt3R 只产生图像对的局部高斯。用它处理视频时，外部脚�
 python -m parking_gs.cli reconstruct-video `
   --video data/raw/site/parking.mp4 `
   --backend splatt3r `
-  --repo D:/src/splatt3r `
+  --repo third_party/splatt3r `
   --checkpoint D:/weights/epoch=19-step=1200.ckpt `
   --command "python D:/tools/my_splatt3r_video.py --frames {frames} --output {output} --checkpoint {checkpoint}" `
   --output outputs/parking_splatt3r
@@ -76,7 +77,7 @@ Splatt3R 的 CC BY-NC 4.0 限制意味着不能把该模型、其权重或其改
 
 ## Web 操作
 
-启动 `python -m parking_gs.server`，浏览器打开 `http://127.0.0.1:8080`：选择前馈后端，填写 repo/checkpoint，选择视频并点“视频重建并刷新地图”。服务把视频保存到 `outputs/<job-id>/input.*`，抽帧与模型日志保存在同一目录，成功后自动出现在场景列表。再编辑起点/终点，点击“Hybrid A* 生成路径并仿真”。
+启动 `python -m parking_gs.server`，浏览器打开 `http://127.0.0.1:8080`：选择前馈后端，DGGT 的 repo 留空时使用 `third_party/dggt`，再填写 checkpoint，选择视频并点“视频重建并刷新地图”。服务把视频保存到 `outputs/<job-id>/input.*`，抽帧与模型日志保存在同一目录，成功后自动出现在场景列表。再编辑起点/终点，点击“Hybrid A* 生成路径并仿真”。
 
 前端展示：高斯场景、鸟瞰 risk/known 地图、Hybrid A* 路径、控制轨迹、展开节点数和误差。失败任务会显示后端错误或“无 Hybrid A* 路径”，不会展示预设路径冒充真实结果。
 
